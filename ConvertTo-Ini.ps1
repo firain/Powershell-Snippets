@@ -31,25 +31,52 @@ function ConvertTo-Ini {
     # server = 192.0.2.62
     # port = 143
     # file = "payroll.dat"
+
+    .NOTES
+    Limitation: only accept object format in the example
+    no error handling for now. will be added in the future
+    psObject console output
+    owner                                            database
+    -----                                            --------
+    @{name=John Doe; organization=Acme Widgets Inc.} @{server=192.0.2.62; port=143; file=payroll.dat}
     #>
     [CmdletBinding()]
     param (
-        [Parameter(ValueFromPipeline = $true, Mandatory=$true)]
+        [Parameter(ValueFromPipeline = $true)]
         [psobject]$InputObject
     )
 
     $output = ""
-
-    foreach ($section in $InputObject.PSObject.Properties) {
-        $output += "`n[$($section.Name)]`n"
-        foreach ($property in $section.Value.PSObject.Properties) {
-            $value = $property.Value
-            if ($value -is [string] -and $value.Contains(" ")) {
-                $value = "`"$value`""
+    try {
+        foreach ($section in $InputObject.PSObject.Properties) {
+            $output += "`n[$($section.Name)]`n"
+            foreach ($property in $section.Value.PSObject.Properties) {
+                $value = $property.Value
+                if ($value -is [string] -and $value.Contains(" ")) {
+                    $value = "`"$value`""
+                }
+                $output +="$($property.Name) = $value`n"
             }
-            $output += "$($property.Name) = $value`n"
         }
+    }catch{
+        Write-Host "Not able to process data`nerror: $_"
     }
 
     return $output.Trim()
 }
+
+$psObject = [PSCustomObject]@{
+    owner = [PSCustomObject]@{
+        name = "John Doe"
+        organization = "Acme Widgets Inc."
+    }
+    database = [PSCustomObject]@{
+        server = "192.0.2.62"
+        port = 143
+        file = "payroll.dat"
+    }
+}
+
+# Convertto-ini -InputObject $psObject
+# $psObject | ConvertTo-Ini
+# $null | ConvertTo-Ini
