@@ -7,7 +7,7 @@ function ConvertFrom-Ini {
     This function takes a string containing INI file content and converts it into a PowerShell object for easy access to the data.
     
     .PARAMETER InputObject
-    The content of the INI file as a string or string array.
+    The content of the INI file as a string.
     
     .EXAMPLE
     # Data from ini Wikipedia
@@ -35,31 +35,31 @@ function ConvertFrom-Ini {
         $InputObject
     )
     begin {
-        $script:output = [PSCustomObject]@{}
-        $script:section = $null
-        $script:ProcessString = [System.Collections.Arraylist]@()
+        $output = [PSCustomObject]@{}
+        $section = $null
+        $ProcessString = [System.Collections.Arraylist]@()
     }
     process {
-        $script:ProcessString.add($InputObject) | Out-Null
+        $ProcessString.add($InputObject) | Out-Null
     }
     end {
         #handles if the string is a raw content format ex: `cat file -raw`
-        if($script:ProcessString.Count -eq 1) {$script:ProcessString = $script:ProcessString[0] -split "`n"}
+        if($ProcessString.Count -eq 1) {$ProcessString = $ProcessString[0] -split "`n"}
         
-        $script:ProcessString | ForEach-Object {
+        $ProcessString | ForEach-Object {
             $_ = $_.Trim()
             if ($_ -match "^\s*;") { return }  # Ignore comments
             if ($_ -match "^\[(.+?)\]") {
-                $script:section = $matches[1]
-                $script:output | Add-Member -MemberType NoteProperty -Name $script:section -Value ([PSCustomObject]@{})
+                $section = $matches[1]
+                $output | Add-Member -MemberType NoteProperty -Name $section -Value ([PSCustomObject]@{})
             }
-            elseif ($script:section -and ($_ -match "^(.*?)\s*=\s*(.*)")) {
+            elseif ($section -and ($_ -match "^(.*?)\s*=\s*(.*)")) {
                 $key, $value = $matches[1].Trim(), $matches[2].Trim('"')
-                $script:output.$script:section | Add-Member -MemberType NoteProperty -Name $key -Value $value
+                $output.$section | Add-Member -MemberType NoteProperty -Name $key -Value $value
             }
         }
 
-        return $script:output
+        return $output
     }
 }
 
@@ -75,6 +75,7 @@ function ConvertFrom-Ini {
 # port = 143
 # file = "payroll.dat"
 # "@
-
+# $iniString | out-file test.ini
 # cat .\test.ini | ConvertFrom-Ini
+
 # $iniString | ConvertFrom-Ini
