@@ -65,17 +65,17 @@ function ConvertTo-Ini {
     return $output.Trim()
 }
 
-$psObject = [PSCustomObject]@{
-    owner = [PSCustomObject]@{
-        name = "John Doe"
-        organization = "Acme Widgets Inc."
-    }
-    database = [PSCustomObject]@{
-        server = "192.0.2.62"
-        port = 143
-        file = "payroll.dat"
-    }
-}
+# $psObject = [PSCustomObject]@{
+#     owner = [PSCustomObject]@{
+#         name = "John Doe"
+#         organization = "Acme Widgets Inc."
+#     }
+#     database = [PSCustomObject]@{
+#         server = "192.0.2.62"
+#         port = 143
+#         file = "payroll.dat"
+#     }
+# }
 
 # Convertto-ini -InputObject $psObject
 # $psObject | ConvertTo-Ini
