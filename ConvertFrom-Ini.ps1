@@ -30,14 +30,19 @@ function ConvertFrom-Ini {
     #>
     [CmdletBinding()]
     param (
-        [Parameter(ValueFromPipeline = $true, Mandatory=$true)]
+        [Parameter(ValuefromPipeline=$True)]
         [string]$InputObject
     )
 
     $output = [PSCustomObject]@{}
     $section = $null
 
-    $InputObject -split "`n" | ForEach-Object {
+    #convert raw string to string array
+    if ($InputObject -is [String]){
+        $InputObject = $InputObject -split "`n"
+    }
+    
+    $InputObject | ForEach-Object {
         $_ = $_.Trim()
         if ($_ -match "^\s*;") { return }  # Ignore comments
         if ($_ -match "^\[(.+?)\]") {
