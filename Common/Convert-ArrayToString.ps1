@@ -1,5 +1,5 @@
 function Convert-ArrayToString {
-    <#
+        <#
     .SYNOPSIS
         Converts an array of strings into a single formatted string.
 
@@ -11,7 +11,7 @@ function Convert-ArrayToString {
         The array of strings to be converted into a formatted string.
 
     .PARAMETER Delimiter
-        The char that use to spaperate the array element
+        The char that use to separate the array element
     .EXAMPLE
         $array = @("i1", "i2", "i3", "i4")
         $formattedString = Convert-ArrayToString -array $array
@@ -21,25 +21,42 @@ function Convert-ArrayToString {
     #>
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true, ValueFromPipeline=$true)]
-        [ValidateNotNullOrEmpty()]
-        [string[]] $array,
-        [char]$Delimiter = ',',
-        [char]$WrapElementsWith=''
+        [Parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        [string[]]$array,
+
+        [Parameter(Mandatory = $false)]
+        [string]$Delimiter = ",",
+
+        [Parameter(Mandatory = $false)]
+        [string]$WrapElementsWith = ""
     )
 
-    if ($array.Count -eq 0) {
-        Write-Host "The array is empty."
-        return ""
+    begin {
+        # Initialize an empty array to collect input elements
+        $collectedArray = @()
     }
 
-    $formattedArray = $array | ForEach-Object { "$WrapElementsWith{0}$WrapElementsWith" -f $_ }
+    process {
+        # Collect input elements from the pipeline
+        if ($null -ne $array) {
+            $collectedArray += $array
+        }
+    }
 
-    $result = $formattedArray -join $Delimiter
-    return $result
+    end {
+        # Apply wrapping if specified
+        if ($WrapElementsWith) {
+            $processedArray = $collectedArray | ForEach-Object {
+                "$WrapElementsWith$_$WrapElementsWith"
+            }
+        } else {
+            $processedArray = $collectedArray
+        }
+
+        # Join the array elements with the specified delimiter
+        $result = $processedArray -join $Delimiter
+
+        # Output the result
+        Write-Output $result
+    }
 }
-
-# Example usage:
-# $array = @("i1", "i2", "i3", "i4")
-# $formattedString = Convert-ArrayToString -array $array
-# Write-Host $formattedString
